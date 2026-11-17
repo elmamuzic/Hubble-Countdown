@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>H₀ from SN Requiem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e8ecf4;
+    --ink: #1a2140;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10152b;
+      --ink: #e6e9f5;
+      color-scheme: dark;
+    }
+  }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    display: grid;
+    place-items: center;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+             env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    box-sizing: border-box;
+    text-align: center;
+  }
+  main {
+    font-weight: 300;
+    font-size: clamp(2.5rem, 11vw, 7.5rem);
+    line-height: 1.15;
+  }
+  h1 { font: inherit; margin: 0 0 0.4em; }
+  .value {
+    font-variant-numeric: tabular-nums lining-nums;
+    white-space: nowrap;
+  }
+  .unit { white-space: nowrap; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>SN Requiem</h1>
+    <div class="value" id="value">--.------</div>
+    <div class="unit">km s<sup>−1</sup> Mpc<sup>−1</sup></div>
+  </main>
+
+<script>
+/* ------------------------------------------------------------------
+   CALIBRATION from Suyu et al. (2025/2026), A&A, arXiv:2509.12319,
+   Fig. 10 (bottom panel): H0 vs. time delay of SN Requiem image 2d.
+
+   The paper's Eq. (13): the delay scales exactly as 1/H0 for a
+   fixed lens model (flat LCDM, Omega_m = 0.3), so
+
+       H0(now) = H0_REF * DT_REF / (now - T0)
+
+   H0_REF, DT_REF: likelihood-weighted combination of the 7 mass
+   models (weights from Table 2, delays from Table E.2) gives a
+   median delay of 3850 days for H0 = 70. This reproduces the
+   Fig. 10 curve: 79 at 3400 d, 71 at 3800 d, 61 at 4400 d, and the
+   paper's forecast (H0 = 73 -> Aug 2026, H0 = 67 -> Jul 2027).
+
+   T0: date of image 2a in the 2016 HST imaging. Reconstructed from
+   the calendar axis of Fig. 10 (3400 d = Nov 2025 ... 4400 d =
+   Aug 2028), which pins it to 18-22 Jul 2016; midpoint used.
+
+   Meaning of the number: the H0 you would infer if image 2d of
+   SN Requiem reappeared right now. Until it appears, this is an
+   upper limit on H0, falling every day.
+------------------------------------------------------------------- */
+const CONFIG = {
+  H0_REF: 70,                       // km/s/Mpc, the paper's fiducial value
+  DT_REF: 3850,                     // days, delay of image 2d at H0_REF
+  T0:     "2016-07-20T00:00:00Z"    // epoch of image 2a
+};
+
+const t0 = Date.parse(CONFIG.T0);
+const k  = CONFIG.H0_REF * CONFIG.DT_REF * 86400000;  // H0 × delay, in ms
+
+const valueEl = document.getElementById("value");
+
+function tick() {
+  const h0 = k / (Date.now() - t0);
+  valueEl.textContent = h0.toFixed(6);
+  document.title = "SN Requiem H₀ = " + h0.toFixed(2);
+}
+tick();
+setInterval(tick, 250);
+</script>
+</body>
+</html>
